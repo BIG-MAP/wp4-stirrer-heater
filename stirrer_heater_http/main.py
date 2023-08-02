@@ -22,7 +22,7 @@ def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.state.ika = StirrerHeater()
+app.state.ika = StirrerHeater(serial_port)
 app.state.logger = logger
 
 
