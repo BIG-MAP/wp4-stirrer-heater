@@ -8,41 +8,56 @@ class StirrerHeater:
         self._serial = SerialDriver(port)
         self._locked = False
 
-    def stirr_at_rpm_for_minutes(self, rpm: int, minutes: int):
-        if self._locked:
-            raise RuntimeError("Device is locked")
+    @staticmethod
+    def respect_lock(func):
+        """
+        Decorator to respect the lock of the device by raising an exception if the device is locked.
+        """
 
-        self._locked = True
-        try:
-            self._set_stirrer_safety_speed(rpm * 1.1)
-            self._set_stirrer_speed(rpm)
-            self._start_stirrer()
-            time.sleep(minutes * 60)
-            self._stop_stirrer()
-        except Exception as e:
-            raise e
-        finally:
-            self._locked = False
+        def wrapper(self, *args, **kwargs):
+            if self._locked:
+                raise RuntimeError("Device is locked")
+            self._locked = True
+            try:
+                return func(self, *args, **kwargs)
+            finally:
+                self._locked = False
 
-    def stirr_and_heat_at_rpm_and_temperature_for_minutes(self, rpm: int, temperature: int, minutes: int):
-        if self._locked:
-            raise RuntimeError("Device is locked")
+        return wrapper
 
-        self._locked = True
-        try:
-            self._set_stirrer_safety_speed(rpm * 1.1)
-            self._set_stirrer_speed(rpm)
-            self._set_hot_plate_safety_temperature(temperature * 1.1)
-            self._set_hot_plate_temperature(temperature)
-            self._start_stirrer()
-            self._start_hot_plate()
-            time.sleep(minutes * 60)
-            self._stop_stirrer()
-            self._stop_hot_plate()
-        except Exception as e:
-            raise e
-        finally:
-            self._locked = False
+    @respect_lock
+    def stirr_at_rpm(self, rpm: int):
+        self._set_stirrer_safety_speed(rpm * 1.1)
+        self._set_stirrer_speed(rpm)
+        self._start_stirrer()
+
+    @respect_lock
+    def stop_stirring(self):
+        self._stop_stirrer()
+
+    @respect_lock
+    def heat_to_temperature(self, temperature: int):
+        self._set_hot_plate_safety_temperature(temperature * 1.1)
+        self._set_hot_plate_temperature(temperature)
+        self._start_hot_plate()
+
+    @respect_lock
+    def stop_heating(self):
+        self._stop_hot_plate()
+
+    @respect_lock
+    def stirr_at_rpm_for_minutes_blocking(self, rpm: int, minutes: int):
+        self.stirr_at_rpm(rpm)
+        time.sleep(minutes * 60)
+        self.stop_stirring()
+
+    @respect_lock
+    def stirr_and_heat_at_rpm_and_temperature_for_minutes_blocking(self, rpm: int, temperature: int, minutes: int):
+        self.stirr_at_rpm(rpm)
+        self.heat_to_temperature(temperature)
+        time.sleep(minutes * 60)
+        self.stop_stirring()
+        self.stop_heating()
 
     def _get_stirrer_speed(self) -> int:
         self._serial.send_command("IN_PV_4")
