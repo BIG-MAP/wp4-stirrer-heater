@@ -8,7 +8,6 @@ class StirrerHeater:
         self._serial = SerialDriver(port)
         self._locked = False
 
-    @staticmethod
     def respect_lock(func):
         """
         Decorator to respect the lock of the device by raising an exception if the device is locked.
@@ -45,23 +44,19 @@ class StirrerHeater:
     def stop_heating(self):
         self._stop_hot_plate()
 
-    @respect_lock
     def stirr_and_heat(self, rpm: int, temperature: int):
         self.stirr(rpm)
         self.heat(temperature)
 
-    @respect_lock
     def stop_stirring_and_heating(self):
         self.stop_stirring()
         self.stop_heating()
 
-    @respect_lock
     def stirr_for_minutes_blocking(self, rpm: int, minutes: int):
         self.stirr(rpm)
         time.sleep(minutes * 60)
         self.stop_stirring()
 
-    @respect_lock
     def stirr_and_heat_for_minutes_blocking(self, rpm: int, temperature: int, minutes: int):
         self.stirr(rpm)
         self.heat(temperature)
