@@ -4,4 +4,4 @@ serial_port = "/dev/ttyACM0"
 
 ika = StirrerHeater(serial_port)
 
-ika.stirr_at_rpm_for_minutes_blocking(100, 1)
+ika.stirr_for_minutes_blocking(100, 1)

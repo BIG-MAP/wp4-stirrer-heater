@@ -38,7 +38,7 @@ class APIResponse:
 
 @app.post("/stirr")
 async def stirr(rpm: int):
-    app.state.ika.stirr_at_rpm(rpm)
+    app.state.ika.stirr(rpm=rpm)
     return APIResponse(message=f"Stirring at {rpm} rpm")
 
 
@@ -50,7 +50,7 @@ async def stop_stirring():
 
 @app.post("/heat")
 async def heat(temperature: int):
-    app.state.ika.heat_to_temperature(temperature)
+    app.state.ika.heat(temperature=temperature)
     return APIResponse(message=f"Heating to {temperature} °C")
 
 
