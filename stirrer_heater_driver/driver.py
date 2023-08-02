@@ -46,6 +46,16 @@ class StirrerHeater:
         self._stop_hot_plate()
 
     @respect_lock
+    def stirr_and_heat(self, rpm: int, temperature: int):
+        self.stirr_at_rpm(rpm)
+        self.heat_to_temperature(temperature)
+
+    @respect_lock
+    def stop_stirring_and_heating(self):
+        self.stop_stirring()
+        self.stop_heating()
+
+    @respect_lock
     def stirr_at_rpm_for_minutes_blocking(self, rpm: int, minutes: int):
         self.stirr_at_rpm(rpm)
         time.sleep(minutes * 60)
@@ -58,6 +68,9 @@ class StirrerHeater:
         time.sleep(minutes * 60)
         self.stop_stirring()
         self.stop_heating()
+
+    def close(self):
+        self._serial.close()
 
     def _get_stirrer_speed(self) -> int:
         self._serial.send_command("IN_PV_4")
